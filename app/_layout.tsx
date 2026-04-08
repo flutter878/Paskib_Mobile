@@ -1,24 +1,38 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import { Stack } from "expo-router";
+import { AppProvider } from "../context/AppContext";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+    <AppProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* Welcome Screen dengan Splash Screen otomatis */}
+        <Stack.Screen
+          name="index"
+          options={{
+            animationEnabled: false,
+            gestureEnabled: false,
+          }}
+        />
+
+        {/* Login Screen */}
+        <Stack.Screen
+          name="login"
+          options={{
+            animationEnabled: false,
+            gestureEnabled: false,
+          }}
+        />
+
+        {/* Tabs Navigation */}
+        <Stack.Screen
+          name="(tabs)"
+          options={{
+            headerShown: false,
+            animationEnabled: false,
+            gestureEnabled: false,
+          }}
+        />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    </AppProvider>
   );
 }

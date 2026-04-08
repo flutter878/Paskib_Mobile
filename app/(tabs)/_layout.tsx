@@ -1,33 +1,57 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Tabs } from "expo-router";
+import { Clipboard, Home, Megaphone, User } from "lucide-react-native";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+        headerShown: false, // Menyembunyikan header bawaan agar kita bisa buat desain sendiri
+        tabBarActiveTintColor: "#dc2626", // Warna merah saat menu aktif
+        tabBarInactiveTintColor: "#9ca3af", // Warna abu-abu saat tidak aktif
+        tabBarStyle: {
+          backgroundColor: "#ffffff",
+          borderTopWidth: 1,
+          borderTopColor: "#f3f4f6",
+          elevation: 10,
+          height: 60,
+          paddingBottom: 10,
+          paddingTop: 5,
+        },
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: "bold",
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Beranda",
+          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
         }}
       />
+
       <Tabs.Screen
-        name="explore"
+        name="pengumuman"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Info",
+          tabBarIcon: ({ color }) => <Megaphone size={24} color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="daftar"
+        options={{
+          title: "Daftar",
+          tabBarIcon: ({ color }) => <Clipboard size={24} color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="profil"
+        options={{
+          title: "Profil",
+          tabBarIcon: ({ color }) => <User size={24} color={color} />,
         }}
       />
     </Tabs>
