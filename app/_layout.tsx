@@ -9,7 +9,6 @@ export default function RootLayout() {
         <Stack.Screen
           name="index"
           options={{
-            animationEnabled: false,
             gestureEnabled: false,
           }}
         />
@@ -18,7 +17,6 @@ export default function RootLayout() {
         <Stack.Screen
           name="login"
           options={{
-            animationEnabled: false,
             gestureEnabled: false,
           }}
         />
@@ -28,7 +26,6 @@ export default function RootLayout() {
           name="(tabs)"
           options={{
             headerShown: false,
-            animationEnabled: false,
             gestureEnabled: false,
           }}
         />

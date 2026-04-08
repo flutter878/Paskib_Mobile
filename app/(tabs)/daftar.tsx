@@ -1,5 +1,12 @@
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
-import { CheckCircle2, ChevronLeft, Upload, Wand2 } from "lucide-react-native";
+import {
+    Calendar,
+    CheckCircle2,
+    ChevronLeft,
+    Upload,
+    Wand2,
+} from "lucide-react-native";
 import React, { useState } from "react";
 import {
     Alert,
@@ -10,6 +17,7 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    Platform,
 } from "react-native";
 
 const STEPS = ["Biodata", "Fisik", "Motivasi", "Berkas"];
@@ -23,6 +31,8 @@ export default function DaftarScreen() {
   const [namaLengkap, setNamaLengkap] = useState("");
   const [tempatLahir, setTempatLahir] = useState("");
   const [tanggalLahir, setTanggalLahir] = useState("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [pickerDate, setPickerDate] = useState(new Date(2008, 0, 1)); // Default 18 tahun lalu
 
   // State Fisik
   const [tinggi, setTinggi] = useState("");
@@ -93,10 +103,38 @@ export default function DaftarScreen() {
     }, 2000);
   };
 
+  const handleDateChange = (event: any, selectedDate: any) => {
+    if (Platform.OS === "android") {
+      // Android automatically closes after selection
+      setShowDatePicker(false);
+      if (event.type === "dismissed") {
+        return;
+      }
+    }
+
+    if (selectedDate) {
+      // Update picker date
+      setPickerDate(selectedDate);
+      
+      // Format: mm/dd/yyyy
+      const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+      const day = String(selectedDate.getDate()).padStart(2, "0");
+      const year = selectedDate.getFullYear();
+      const formattedDate = `${month}/${day}/${year}`;
+      setTanggalLahir(formattedDate);
+      
+      // Close picker on iOS
+      if (Platform.OS === "ios") {
+        setShowDatePicker(false);
+      }
+    }
+  };
+
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     } else {
+      // Kembali ke halaman tabs (data tetap tersimpan)
       router.back();
     }
   };
@@ -105,22 +143,6 @@ export default function DaftarScreen() {
     Alert.alert("Pendaftaran Berhasil", "Data Anda telah berhasil dikirimkan", [
       { text: "OK", onPress: () => router.replace("/(tabs)") },
     ]);
-  };
-
-  // Function untuk mengecek apakah step sudah lengkap
-  const isStepComplete = (step: number) => {
-    if (step === 1) {
-      return (
-        nik && namaLengkap && tempatLahir && tanggalLahir && nik.length === 16
-      );
-    } else if (step === 2) {
-      return tinggi && berat;
-    } else if (step === 3) {
-      return asalSekolah && esai;
-    } else if (step === 4) {
-      return suratIzinOrangTua && suratKeteranganSehat && nilaiRaporTerakhir;
-    }
-    return false;
   };
 
   return (
@@ -137,8 +159,6 @@ export default function DaftarScreen() {
       <View style={styles.stepContainer}>
         {STEPS.map((step, index) => {
           const stepNumber = index + 1;
-          const isComplete =
-            stepNumber < currentStep && isStepComplete(stepNumber);
           const isActive = stepNumber === currentStep;
           const isCompleted = stepNumber < currentStep;
 
@@ -225,14 +245,15 @@ export default function DaftarScreen() {
               </View>
               <View style={styles.halfInput}>
                 <Text style={styles.label}>Tgl Lahir</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="mm/dd/yyyy"
-                  placeholderTextColor="#d1d5db"
-                  value={tanggalLahir}
-                  onChangeText={setTanggalLahir}
-                  keyboardType="numeric"
-                />
+                <TouchableOpacity
+                  style={styles.datePickerButton}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Calendar size={20} color="#dc2626" />
+                  <Text style={styles.datePickerButtonText}>
+                    {tanggalLahir || "Pilih Tanggal"}
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -405,6 +426,42 @@ export default function DaftarScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* DateTime Picker */}
+      {showDatePicker && Platform.OS === "ios" && (
+        <View style={styles.datePickerContainer}>
+          <View style={styles.datePickerHeader}>
+            <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+              <Text style={styles.datePickerHeaderText}>Batal</Text>
+            </TouchableOpacity>
+            <Text style={styles.datePickerTitle}>Pilih Tanggal</Text>
+            <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+              <Text style={[styles.datePickerHeaderText, styles.datePickerHeaderDone]}>
+                Selesai
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <DateTimePicker
+            value={pickerDate}
+            mode="date"
+            display="spinner"
+            onChange={handleDateChange}
+            maximumDate={new Date()}
+            minimumDate={new Date(1950, 0, 1)}
+            textColor="#1f2937"
+          />
+        </View>
+      )}
+      {showDatePicker && Platform.OS === "android" && (
+        <DateTimePicker
+          value={pickerDate}
+          mode="date"
+          display="calendar"
+          onChange={handleDateChange}
+          maximumDate={new Date()}
+          minimumDate={new Date(1950, 0, 1)}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -516,6 +573,51 @@ const styles = StyleSheet.create({
     color: "#1f2937",
     marginBottom: 16,
     backgroundColor: "#f9fafb",
+  },
+  datePickerButton: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 16,
+    backgroundColor: "#f9fafb",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  datePickerButtonText: {
+    fontSize: 14,
+    color: "#1f2937",
+    fontWeight: "500",
+  },
+  datePickerContainer: {
+    backgroundColor: "#ffffff",
+    borderTopWidth: 1,
+    borderTopColor: "#e5e7eb",
+  },
+  datePickerHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb",
+  },
+  datePickerTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1f2937",
+  },
+  datePickerHeaderText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#6b7280",
+  },
+  datePickerHeaderDone: {
+    color: "#dc2626",
+    fontWeight: "700",
   },
   rowContainer: {
     flexDirection: "row",
